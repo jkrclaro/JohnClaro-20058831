@@ -1,12 +1,20 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
-public class Calculator extends JPanel
+public class Calculator extends JPanel implements ActionListener
 {
 	private JButton[] numButtons;
 	private JButton[] opButtons;
 	private JTextField uField;
 	private JTextField bField;
+	private int num1;
+	private int num2;
+	private int ans;
+	private String op;
 	
 	public Calculator()
 	{
@@ -16,6 +24,7 @@ public class Calculator extends JPanel
 		setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
 		
+		// Numbers
 		int[][] numConstraints = new int[][] {
 		//   x,y,w,h
 			{1,4,1,1}, // 0
@@ -30,11 +39,12 @@ public class Calculator extends JPanel
 			{3,1,1,1}, // 9
 		};
 		
-		// Numbers
 		numButtons = new JButton[10];
 		for (int i=0; i<numButtons.length; i++)
 		{
 			numButtons[i] = new JButton("" + i);
+			numButtons[i].addActionListener(this);
+			
 			gbc.gridx = numConstraints[i][0];
 			gbc.gridy = numConstraints[i][1];
 			gbc.gridwidth = numConstraints[i][2];
@@ -67,6 +77,9 @@ public class Calculator extends JPanel
 			gbc.gridy = opConstraints[i][1];
 			gbc.gridwidth = opConstraints[i][2];
 			gbc.gridheight = opConstraints[i][3];
+			
+			opButtons[i].addActionListener(this);
+			
 			add(opButtons[i], gbc);
 		}
 		
@@ -101,5 +114,58 @@ public class Calculator extends JPanel
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) 
+	{
+		ArrayList<String> data = new ArrayList<String>();
+		
+		for (int i=0; i<numButtons.length; i++)
+		{
+			if (e.getSource() == numButtons[i])
+			{
+				uField.setText(uField.getText() + i);
+			}
+		}
+		
+		if (e.getSource() == opButtons[0])
+		{
+			num1 = Integer.parseInt(uField.getText());
+			op = "+";
+			uField.setText("");
+		}
+		
+		if (e.getSource() == opButtons[1])
+		{
+			num1 = Integer.parseInt(uField.getText());
+			op = "-";
+			uField.setText("");
+		}
+		
+		if (e.getSource() == opButtons[2])
+		{
+			num1 = Integer.parseInt(uField.getText());
+			op = "*";
+			uField.setText("");
+		}
+		
+		if (e.getSource() == opButtons[3])
+		{
+			num1 = Integer.parseInt(uField.getText());
+			op = "/";
+			uField.setText("");
+		}
+		
+		if (e.getSource() == opButtons[4])
+		{
+			num2 = Integer.parseInt(uField.getText());
+			
+			if (op == "+")
+			{
+				// Send num1, op and num2 using RMI
+			}
+		}
+		
 	}
 }
