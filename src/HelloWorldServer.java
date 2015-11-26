@@ -6,6 +6,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.swing.JOptionPane;
 
 /*
 Classname: HelloWorldServer
@@ -19,34 +23,30 @@ public class HelloWorldServer extends UnicastRemoteObject implements HelloWorld
 		super();
 	}
 
-	public String helloWorld() 
+	public String helloWorld(String data) 
 	{
 		System.out.println("Invocation to helloWorld was succesful!");
-		return "Hello World from RMI server!";
+		
+		List<String> clientData = Arrays.asList(data.split(","));
+		System.out.println(clientData.get(0));
+		System.out.println(clientData.get(1));
+		System.out.println(clientData.get(2));
+		
+		return "Stephortless";
 	}
 
 	public static void main(String args[]) 
 	{
 		try 
 		{
-			// Create an object of the HelloWorldServer class.
-		
 			HelloWorldServer obj = new HelloWorldServer();
-			
-			// Bind this object instance to the name "HelloServer".
-			// Include the following line if rmiregistry was not started on the command line
-			 Registry registry = LocateRegistry.createRegistry(1099);
-
-			// and replace the Naming.rebind() with the next line
-			 registry.rebind("HelloWorld", obj );
-		
-//			Naming.rebind("HelloWorld", obj);
+			Registry registry = LocateRegistry.createRegistry(1099);
+			registry.rebind("HelloWorld", obj );
 			System.out.println("HelloWorld bound in registry");
 		}
 		catch (Exception e) 
 		{
-			System.out.println("HelloWorldServer error: " + e.getMessage());
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }

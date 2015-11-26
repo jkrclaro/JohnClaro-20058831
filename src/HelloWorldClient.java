@@ -3,7 +3,6 @@ Filename: HelloWorldClient.java
 */
 
 import java.rmi.Naming;
-import java.rmi.RemoteException;
 
 /*
 Classname: HelloWorldClient

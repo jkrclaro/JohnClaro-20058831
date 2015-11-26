@@ -1,6 +1,9 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -11,9 +14,8 @@ public class Calculator extends JPanel implements ActionListener
 	private JButton[] opButtons;
 	private JTextField uField;
 	private JTextField bField;
-	private int num1;
-	private int num2;
-	private int ans;
+	private String num1;
+	private String num2;
 	private String op;
 	
 	public Calculator()
@@ -118,9 +120,7 @@ public class Calculator extends JPanel implements ActionListener
 
 	@Override
 	public void actionPerformed(ActionEvent e) 
-	{
-		ArrayList<String> data = new ArrayList<String>();
-		
+	{	
 		for (int i=0; i<numButtons.length; i++)
 		{
 			if (e.getSource() == numButtons[i])
@@ -131,39 +131,49 @@ public class Calculator extends JPanel implements ActionListener
 		
 		if (e.getSource() == opButtons[0])
 		{
-			num1 = Integer.parseInt(uField.getText());
+			num1 = uField.getText();
 			op = "+";
 			uField.setText("");
 		}
 		
 		if (e.getSource() == opButtons[1])
 		{
-			num1 = Integer.parseInt(uField.getText());
+			num1 = uField.getText();
 			op = "-";
 			uField.setText("");
 		}
 		
 		if (e.getSource() == opButtons[2])
 		{
-			num1 = Integer.parseInt(uField.getText());
+			num1 = uField.getText();
 			op = "*";
 			uField.setText("");
 		}
 		
 		if (e.getSource() == opButtons[3])
 		{
-			num1 = Integer.parseInt(uField.getText());
+			num1 = uField.getText();
 			op = "/";
 			uField.setText("");
 		}
 		
 		if (e.getSource() == opButtons[4])
 		{
-			num2 = Integer.parseInt(uField.getText());
+			num2 = uField.getText();
 			
 			if (op == "+")
 			{
-				// Send num1, op and num2 using RMI
+				try 
+				{	
+					String clientData = num1 + "," + op + "," + num2;
+					HelloWorld obj = (HelloWorld)Naming.lookup("HelloWorld");
+					String ans = obj.helloWorld(clientData);
+					System.out.println("Message from the RMI-server was: " + ans);
+				}
+				catch (Exception e1) 
+				{
+					JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 		

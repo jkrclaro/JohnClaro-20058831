@@ -4,6 +4,7 @@ Filename: HelloWorld.java
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 /*
 
@@ -14,5 +15,5 @@ Comment: The remote interface.
 
 public interface HelloWorld extends Remote 
 {
-	public String helloWorld() throws RemoteException;
+	public String helloWorld(String clientData) throws RemoteException;
 }
