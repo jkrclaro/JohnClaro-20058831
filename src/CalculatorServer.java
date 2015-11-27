@@ -57,35 +57,45 @@ public class CalculatorServer extends UnicastRemoteObject implements CalculatorI
 		List<String> clientData = Arrays.asList(data.split(","));
 		
 		updateServerLog("Client-01 connected at IP: " + RemoteServer.getClientHost(), Color.RED);
-		int num1 = Integer.parseInt(clientData.get(0));
-		String op = clientData.get(1);
-		int num2 = Integer.parseInt(clientData.get(2));
-		updateServerLog("Request from Client-01: ", Color.RED);
-		updateServerLog("Opnd1: " + num1, Color.BLUE);
-		updateServerLog("Opnd2: " + num2, Color.BLUE);
-		updateServerLog("Oprtr: " + op, Color.BLUE);
+		int answer = 0;
 		
-		if (op.equals("+"))
+		try
 		{
-			num1 += num2;
-		}
-		else if (op.equals("-"))
-		{
-			num1 -= num2;
-		}
-		else if (op.equals("*"))
-		{
-			num1 *= num2;
-		}
+			int firstOperand = Integer.parseInt(clientData.get(0));
+			String op = clientData.get(1);
+			int secondOperand = Integer.parseInt(clientData.get(2));
+			
+			updateServerLog("Request from Client-01: ", Color.RED);
+			updateServerLog("First Operand: " + firstOperand, Color.BLUE);
+			updateServerLog("Second Operand: " + secondOperand, Color.BLUE);
+			updateServerLog("Operator: " + op, Color.BLUE);
+			
+			if (op.equals("+"))
+			{
+				answer = firstOperand + secondOperand;
+			}
+			else if (op.equals("-"))
+			{
+				answer = firstOperand - secondOperand;
+			}
+			else if (op.equals("*"))
+			{
+				answer = firstOperand * secondOperand;
+			}
 
-		else if (op.equals("/"))
-		{
-			num1 /= num2;
+			else if (op.equals("/"))
+			{
+				answer = firstOperand / secondOperand;
+			}
+			
+			updateServerLog("Data to Client-01: " + String.valueOf(answer), Color.BLACK);
+			
+			return format(answer);
 		}
-		
-		updateServerLog("Data to Client-01: " + String.valueOf(num1), Color.BLACK);
-		
-		return format(num1);
+		catch (Exception error)
+		{
+			return "  Invalid data! Please try again using valid inputs";
+		}
 	}
 	
 	/**

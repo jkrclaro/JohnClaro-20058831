@@ -8,13 +8,14 @@ public class CalculatorClient extends JPanel implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
 	
-	private JButton[] numButtons;
-	private JButton[] opButtons;
-	private JTextField uField;
-	private JTextField bField;
-	private String num1;
-	private String num2;
-	private String op;
+	private JButton[] numberButtons;
+	private JButton[] operatorButtons;
+	private JTextField upperField;
+	private JTextField bottomField;
+	private String firstOperand;
+	private String secondOperand;
+	private String operator;
+	private GridBagConstraints gbc;
 	
 	public CalculatorClient()
 	{
@@ -22,8 +23,16 @@ public class CalculatorClient extends JPanel implements ActionListener
 		gbl.columnWidths = new int[] {80, 80, 80, 80};
 		gbl.rowHeights = new int[] {80, 80, 80, 80, 80, 80};
 		setLayout(gbl);
-		GridBagConstraints gbc = new GridBagConstraints();
+		gbc = new GridBagConstraints();
 		
+		createNumberButtons();
+		createOperatorButtons();
+		createUpperDisplay();
+		createBottomDisplay();
+	}
+	
+	private void createNumberButtons()
+	{
 		/**
 		 *  An organized and efficient way to assign number buttons with coordinates.
 		 */
@@ -41,11 +50,11 @@ public class CalculatorClient extends JPanel implements ActionListener
 			{3,1,1,1}, // 9
 		};
 		
-		numButtons = new JButton[10];
-		for (int i=0; i<numButtons.length; i++)
+		numberButtons = new JButton[10];
+		for (int i=0; i<numberButtons.length; i++)
 		{
-			numButtons[i] = new JButton("" + i);
-			numButtons[i].addActionListener(this);
+			numberButtons[i] = new JButton("" + i);
+			numberButtons[i].addActionListener(this);
 			
 			gbc.gridx = numConstraints[i][0]; // Apply the x coordinate of the button
 			gbc.gridy = numConstraints[i][1]; // Apply the y coordinate of the button
@@ -53,9 +62,12 @@ public class CalculatorClient extends JPanel implements ActionListener
 			gbc.gridheight = numConstraints[i][3]; // Apply the height of the button
 			gbc.fill = GridBagConstraints.BOTH;
 			gbc.insets = new Insets(2, 2, 2, 2);
-			add(numButtons[i], gbc);
+			add(numberButtons[i], gbc);
 		}
-		
+	}
+	
+	private void createOperatorButtons()
+	{
 		// Operators
 		int[][] opConstraints = new int[][] {
 			//   x,y,w,h
@@ -67,51 +79,54 @@ public class CalculatorClient extends JPanel implements ActionListener
 			};
 		
 		// Instantiate the operator buttons
-		opButtons = new JButton[5];
-		opButtons[0] = new JButton("+");
-		opButtons[1] = new JButton("-");
-		opButtons[2] = new JButton("*");
-		opButtons[3] = new JButton("/");
-		opButtons[4] = new JButton("Submit");
+		operatorButtons = new JButton[5];
+		operatorButtons[0] = new JButton("+");
+		operatorButtons[1] = new JButton("-");
+		operatorButtons[2] = new JButton("*");
+		operatorButtons[3] = new JButton("/");
+		operatorButtons[4] = new JButton("Submit");
 		
 		// Same as the number button
-		for (int i=0; i<opButtons.length; i++)
+		for (int i=0; i<operatorButtons.length; i++)
 		{
 			gbc.gridx = opConstraints[i][0];
 			gbc.gridy = opConstraints[i][1];
 			gbc.gridwidth = opConstraints[i][2];
 			gbc.gridheight = opConstraints[i][3];
 			
-			opButtons[i].setEnabled(false);
-			opButtons[i].addActionListener(this);
+			operatorButtons[i].setEnabled(false);
+			operatorButtons[i].addActionListener(this);
 			
-			add(opButtons[i], gbc);
+			add(operatorButtons[i], gbc);
 		}
-		
-		/**
-		 * Upper display, this is the display that gets updated when adding in numbers
-		 */
-		uField = new JTextField();
-		uField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		uField.setEditable(false);
+	}
+	
+	private void createUpperDisplay()
+	{
+		upperField = new JTextField();
+		upperField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+		upperField.setEditable(false);
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
-		add(uField, gbc);
-		
+		add(upperField, gbc);
+	}
+	
+	private void createBottomDisplay()
+	{
 		/**
 		 * Bottom display, this is the display that gets updated when the server
 		 * sends you back the answer
 		 */
-		bField = new JTextField();
-		bField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		bField.setEditable(false);
+		bottomField = new JTextField();
+		bottomField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+		bottomField.setEditable(false);
 		gbc.gridx = 0;
 		gbc.gridy = 5;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
-		add(bField, gbc);
+		add(bottomField, gbc);
 	}
 	
 	/**
@@ -119,11 +134,106 @@ public class CalculatorClient extends JPanel implements ActionListener
 	 * This does not include the Submit button.
 	 * @param setting - False to disable all buttons or True to enable all of them
 	 */
-	public void adjustOperatorButtons(Boolean setting)
+	private void adjustOperatorButtons(Boolean setting)
 	{
-		for (int i=0; i<opButtons.length - 1; i++)
+		for (int i=0; i<operatorButtons.length - 1; i++)
 		{
-			opButtons[i].setEnabled(setting);
+			operatorButtons[i].setEnabled(setting);
+		}
+	}
+	
+	/**
+	 * Listens for when a button is pressed.
+	 * If it has been pressed then append the number of the number button that was pressed to the
+	 * upperField. Enable the operator buttons automatically.
+	 * If the operator is not empty or null then disable the operator buttons and enable the submit button.
+	 * @param event
+	 */
+	private void checkIfNumberIsPressed(ActionEvent event)
+	{
+		for (int i=0; i<numberButtons.length; i++)
+		{
+			if (event.getSource() == numberButtons[i])
+			{
+				upperField.setText(upperField.getText() + i);
+				
+				adjustOperatorButtons(true); // Enable operator buttons when a number is pressed
+				if (operator != null && !operator.isEmpty())
+				{
+					adjustOperatorButtons(false); // Disable the operator buttons
+					operatorButtons[4].setEnabled(true); // Enable the submit button
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Listens for when an operator button is pressed.
+	 * If it has been pressed then the first operand is equal to the upperField,
+	 * Then assign the operator to which operator button was pressed then clear the upperField to make
+	 * space for the secondOperand. Also disable the operator buttons when it has been pressed.
+	 * If the submit button was pressed then get the firstOperand, operator and secondOperand and use the RMI
+	 * channel to send these data to the CalculatorServer. Get an answer back from the Calculator Server
+	 * and set the answer to the bottomField.
+	 * 
+	 * operatorButtons[0] is +
+	 * operatorButtons[1] is -
+	 * operatorButtons[2] is *
+	 * operatorButtons[3] is /
+	 * operatorButtons[4] is the Submit button
+	 * 
+	 * @param event - The event that occurred in the GUI
+	 */
+	private void checkIfOperatorIsPressed(ActionEvent event)
+	{
+		if (event.getSource() == operatorButtons[0]) // Addition
+		{
+			firstOperand = upperField.getText();
+			operator = "+";
+			upperField.setText("");
+			adjustOperatorButtons(false);
+		}
+		
+		if (event.getSource() == operatorButtons[1]) // Subtraction
+		{
+			firstOperand = upperField.getText();
+			operator = "-";
+			upperField.setText("");
+			adjustOperatorButtons(false);
+		}
+		
+		if (event.getSource() == operatorButtons[2]) // Multiplication
+		{
+			firstOperand = upperField.getText();
+			operator = "*";
+			upperField.setText("");
+			adjustOperatorButtons(false);
+		}
+		
+		if (event.getSource() == operatorButtons[3]) // Division
+		{
+			firstOperand = upperField.getText();
+			operator = "/";
+			upperField.setText("");
+			adjustOperatorButtons(false);
+		}
+		
+		if (event.getSource() == operatorButtons[4]) // Submit
+		{
+			try 
+			{	
+				secondOperand = upperField.getText();
+				String clientData = firstOperand + "," + operator + "," + secondOperand;
+				CalculatorInterface calculatorObject = (CalculatorInterface)Naming.lookup("CalculatorServer");
+				String answer = calculatorObject.calculate(clientData);
+				bottomField.setText(answer);
+				upperField.setText("");
+				operator = "";
+			}
+			catch (Exception e1) 
+			{
+				JOptionPane.showMessageDialog(null, "1: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 	
@@ -134,74 +244,10 @@ public class CalculatorClient extends JPanel implements ActionListener
 	 * Once a number is pressed, you can now press an operator or build the operand more.
 	 * After an operator is pressed
 	 */
-	public void actionPerformed(ActionEvent e) 
+	public void actionPerformed(ActionEvent event) 
 	{	
-		for (int i=0; i<numButtons.length; i++)
-		{
-			if (e.getSource() == numButtons[i])
-			{
-				uField.setText(uField.getText() + i);
-			}
-		}
-		
-		if (uField.getText() != null && !uField.getText().isEmpty())
-		{
-			adjustOperatorButtons(true);
-		}
-		
-		if (op != null && !op.isEmpty())
-		{
-			opButtons[4].setEnabled(true);
-		}
-			
-		if (e.getSource() == opButtons[0])
-		{
-			num1 = uField.getText();
-			op = "+";
-			uField.setText("");
-			adjustOperatorButtons(false);
-		}
-		
-		if (e.getSource() == opButtons[1])
-		{
-			num1 = uField.getText();
-			op = "-";
-			uField.setText("");
-			adjustOperatorButtons(false);
-		}
-		
-		if (e.getSource() == opButtons[2])
-		{
-			num1 = uField.getText();
-			op = "*";
-			uField.setText("");
-			adjustOperatorButtons(false);
-		}
-		
-		if (e.getSource() == opButtons[3])
-		{
-			num1 = uField.getText();
-			op = "/";
-			uField.setText("");
-			adjustOperatorButtons(false);
-		}
-		
-		if (e.getSource() == opButtons[4]) // When submitted
-		{
-			try 
-			{	
-				num2 = uField.getText();
-				String clientData = num1 + "," + op + "," + num2;
-				CalculatorInterface obj = (CalculatorInterface)Naming.lookup("CalculatorServer");
-				String ans = obj.calculate(clientData);
-				bField.setText("Data received from Server: " + ans);
-				uField.setText("");
-			}
-			catch (Exception e1) 
-			{
-				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
+		checkIfNumberIsPressed(event);
+		checkIfOperatorIsPressed(event);
 	}
 	
 	public static void main(String[] args)
